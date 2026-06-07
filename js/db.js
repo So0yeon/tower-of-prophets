@@ -80,13 +80,46 @@
   }
 
   // ---------------- 플레이어 (학생) ----------------
+  // nickname generation lists
+  const NICK_ADJ = [
+    "황금","은빛","청록","남빛","보랏빛","붉은","주홍","분홍","하얀","검은","회색","푸른","하늘빛","바다빛","달빛","별빛","새벽의","황혼의","찬란한","빛나는","고요한","신비한","은은한","영롱한","강철의","수정의","서리의","불꽃의","번개의","그림자의"
+  ];
+  const NICK_ANIMALS = [
+    "여우","늑대","올빼미","수달","고래","표범","사슴","매","독수리","까마귀","펭귄","호랑이","사자","치타","고양이","토끼","다람쥐","판다","곰","너구리","돌고래","상어","문어","해달","두루미","백조","참매","부엉이","스라소니","코요테"
+  ];
 
-  async function joinRoom(code, nickname) {
+  async function generateNickname(room_id) {
+    const maxAttempts = 12;
+    for (let i = 0; i < maxAttempts; i++) {
+      const a = NICK_ADJ[Math.floor(Math.random() * NICK_ADJ.length)];
+      const b = NICK_ANIMALS[Math.floor(Math.random() * NICK_ANIMALS.length)];
+      const nick = `${a} ${b}`;
+      const { data: existing, error } = await sb
+        .from("players")
+        .select("nickname")
+        .eq("room_id", room_id)
+        .eq("nickname", nick)
+        .limit(1)
+        .maybeSingle();
+      if (!existing) return nick;
+    }
+    return `${NICK_ADJ[Math.floor(Math.random() * NICK_ADJ.length)]} ${NICK_ANIMALS[Math.floor(Math.random() * NICK_ANIMALS.length)]} ${Math.floor(Math.random()*90+10)}`;
+  }
+
+  async function joinRoom(code, existingPlayerId) {
     const room = await getRoomByCode(code);
     if (!room) throw new Error("그런 코드의 탑이 없습니다.");
     if (room.phase !== "lobby") throw new Error("이미 시작된 탑에는 입장할 수 없습니다.");
 
-    // 다음 예언자 번호 = (현재 최대 + 1), 충돌 시 재시도
+    // If existing player id is provided and belongs to this room, return it
+    if (existingPlayerId) {
+      try {
+        const p = await getPlayer(existingPlayerId);
+        if (p && p.room_id === room.id) return { room, player: p };
+      } catch (_) {}
+    }
+
+    // next player number assignment with retries
     for (let i = 0; i < 8; i++) {
       const { data: maxRow } = await sb
         .from("players")
@@ -97,13 +130,15 @@
         .maybeSingle();
       const nextNum = (maxRow?.player_number || 0) + 1;
 
+      const nickname = await generateNickname(room.id);
+
       const { data, error } = await sb
         .from("players")
-        .insert({ room_id: room.id, player_number: nextNum, nickname: nickname || null })
+        .insert({ room_id: room.id, player_number: nextNum, nickname })
         .select()
         .single();
       if (!error) return { room, player: data };
-      if (error.code !== "23505") throw error; // 번호 충돌 → 재시도
+      if (error.code !== "23505") throw error; // if other error, bubble up
     }
     throw new Error("입장에 실패했습니다. 다시 시도해 주세요.");
   }

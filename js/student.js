@@ -48,12 +48,23 @@ function bindJoin() {
 
 async function doJoin() {
   const code = $("codeInput").value.trim();
-  const nick = $("nickInput").value.trim();
   $("joinError").textContent = "";
   if (code.length < 4) { $("joinError").textContent = "코드 4자리를 입력하세요."; return; }
   $("btnJoin").disabled = true;
   try {
-    const { room, player } = await DB.joinRoom(code, nick);
+    // Re-attach existing player if localStorage has valid ids for the same room
+    const storedRoom = localStorage.getItem("top_player_room");
+    const storedPlayerId = localStorage.getItem("top_player_id");
+    if (storedRoom && storedPlayerId) {
+      const room = await DB.getRoomByCode(code);
+      if (room && room.id === storedRoom) {
+        const player = await DB.getPlayer(storedPlayerId);
+        if (player) { await attach(room, player); $("btnJoin").disabled = false; return; }
+      }
+    }
+
+    // Create new player; DB.joinRoom will generate & persist a random nickname
+    const { room, player } = await DB.joinRoom(code);
     localStorage.setItem("top_player_room", room.id);
     localStorage.setItem("top_player_id", player.id);
     await attach(room, player);
