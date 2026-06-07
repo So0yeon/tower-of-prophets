@@ -116,6 +116,10 @@ function render() {
   show("view-play", r.phase === "prophecy" || r.phase === "revealing" || r.phase === "revealed");
   show("view-end", r.phase === "ended");
 
+  const nick = S.player?.nickname ? `✦ ${S.player.nickname}` : "—";
+  $("nickWait").textContent = nick;
+  $("nickPlay").textContent = nick;
+
   if (r.phase === "lobby") { hideWait(); }
   if (r.phase === "prophecy") { hideWait(); renderPlay(); }
   if (r.phase === "revealing") { renderPlay(); showRevealing(); }
