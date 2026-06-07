@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>예언자들의 탑 — 예언자</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .sboard { max-width: 540px; margin: 0 auto; padding: 16px; }
+  .statbar { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:14px; }
+  .stat { text-align:center; padding:12px 6px; }
+  .stat .k { font-size:.68rem; letter-spacing:.2em; color:var(--ink-dim); text-transform:uppercase; }
+  .stat .v { font-family:var(--tech); font-weight:900; font-size:1.7rem; margin-top:2px; }
+  .stat .v.cyan { color:var(--cyan); } .stat .v.gold { color:var(--gold-bright); }
+
+  .layer-head { text-align:center; margin-bottom:10px; }
+  .layer-head .lt { font-family:var(--display); font-size:1.5rem; }
+  .layer-head .tm { font-family:var(--tech); font-size:1.1rem; color:var(--cyan); }
+
+  .prophecy-input { display:flex; gap:10px; margin-top:14px; }
+  .prophecy-input input { flex:1; }
+  .submitted-note { text-align:center; color:var(--gold); font-weight:700; margin-top:12px; }
+
+  .cards { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-top:8px; }
+  .card {
+    position:relative; padding:14px; border-radius:14px; cursor:pointer;
+    background:rgba(5,8,24,.5); border:1px solid var(--glass-line);
+    transition:transform .12s, border-color .2s; overflow:hidden;
+  }
+  .card:hover { transform:translateY(-2px); border-color:var(--cyan); }
+  .card .ic { font-size:1.4rem; }
+  .card .cn { font-family:var(--display); font-size:1.05rem; margin-top:4px; }
+  .card .cd { font-size:.72rem; color:var(--ink-dim); margin-top:4px; line-height:1.4; }
+  .card .cost { position:absolute; top:10px; right:12px; font-size:.72rem; color:var(--gold); font-weight:700; }
+  .card.locked { opacity:.45; cursor:not-allowed; }
+  .card.locked:hover { transform:none; border-color:var(--glass-line); }
+
+  .records { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .rec { display:grid; grid-template-columns:auto 1fr auto auto; gap:10px; align-items:center;
+         padding:9px 12px; border-radius:10px; background:rgba(5,8,24,.4); border:1px solid var(--glass-line); font-size:.9rem; }
+  .rec .rl { color:var(--ink-dim); }
+  .rec .rv { font-family:var(--tech); font-weight:700; }
+  .rec .rr { font-size:.78rem; color:var(--ink-dim); }
+  .rec .rg { font-family:var(--tech); color:var(--cyan); font-weight:700; }
+
+  /* 결과/대기 오버레이 */
+  #swait { position:fixed; inset:0; z-index:40; background:rgba(2,4,12,.92);
+           display:none; place-items:center; }
+  #swait.show { display:grid; }
+  .swait-msg { font-family:var(--display); font-size:1.4rem; color:var(--cyan); margin-top:16px; }
+
+  /* 모달 */
+  #modal { position:fixed; inset:0; z-index:60; background:rgba(2,4,12,.85); display:none; place-items:center; padding:20px; }
+  #modal.show { display:grid; }
+  .modal-card { width:min(440px,94vw); max-height:80vh; overflow:auto; }
+  .target-list { display:flex; flex-direction:column; gap:8px; margin-top:12px; }
+  .target-btn { text-align:left; padding:12px 14px; border-radius:10px; background:rgba(5,8,24,.5);
+                border:1px solid var(--glass-line); color:var(--ink); cursor:pointer; font-family:var(--body); font-weight:600; }
+  .target-btn:hover { border-color:var(--cyan); }
+
+  .result-row { display:grid; grid-template-columns:auto 1fr auto; gap:10px; padding:8px 0; border-bottom:1px solid rgba(120,200,255,.12); font-size:.92rem; }
+</style>
+</head>
+<body>
+<div class="stage sboard">
+
+  <!-- 입장 -->
+  <section id="view-join" class="center-screen" style="min-height:90vh;">
+    <div class="panel corner-frame fade-in" style="width:100%; text-align:center;">
+      <div class="orb-wrap" style="margin-bottom:6px;">
+        <div class="orb" style="width:110px;height:110px;">
+          <div class="ring"></div><div class="ring r2"></div>
+          <div class="core" style="width:46px;height:46px;"><span class="gold">🔮</span></div>
+        </div>
+      </div>
+      <h2 style="font-size:1.6rem;">예언자로 입장</h2>
+      <p class="muted" style="margin:6px 0 18px;">교사가 알려준 입장 코드를 입력하세요.</p>
+      <div class="stack">
+        <input class="field" id="codeInput" maxlength="4" placeholder="코드 (예: K7QM)" autocomplete="off">
+        <input class="field" id="nickInput" maxlength="8" placeholder="이름 (선택)" style="font-size:1rem; letter-spacing:.05em;">
+        <button class="btn gold lg block" id="btnJoin">탑에 오르기</button>
+      </div>
+      <p id="joinError" class="muted" style="color:var(--danger); margin-top:12px; min-height:1.2em;"></p>
+    </div>
+  </section>
+
+  <!-- 대기 -->
+  <section id="view-wait" class="center-screen hidden" style="min-height:90vh;">
+    <div class="panel corner-frame fade-in" style="width:100%; text-align:center;">
+      <p class="tracked">입장 완료</p>
+      <div class="tech gold pulse" style="font-size:3rem; margin:8px 0;" id="waitNum">P0</div>
+      <h2 style="font-size:1.4rem;">탑에 올랐습니다</h2>
+      <p class="muted" style="margin-top:8px;">다른 예언자들을 기다리는 중...<br>교사가 제1계층을 열면 시작됩니다.</p>
+    </div>
+  </section>
+
+  <!-- 플레이 -->
+  <section id="view-play" class="hidden">
+    <div class="statbar">
+      <div class="panel stat" style="padding:12px 6px;"><div class="k">예언자</div><div class="v" id="sNum">P0</div></div>
+      <div class="panel stat" style="padding:12px 6px;"><div class="k">통찰력</div><div class="v cyan" id="sInsight">0</div></div>
+      <div class="panel stat" style="padding:12px 6px;"><div class="k">순위</div><div class="v gold" id="sRank">-</div></div>
+    </div>
+
+    <div class="panel corner-frame">
+      <div class="layer-head">
+        <div class="lt" id="sLayer">제1계층</div>
+        <div class="tm" id="sTimer">5:00</div>
+      </div>
+
+      <div id="inputArea">
+        <p class="muted" style="text-align:center; font-size:.85rem;">
+          1~100 사이 자연수로 예언하세요.<br>진실의 좌표(평균의 절반)에 가장 가까운 예언자가 통찰력을 얻습니다.
+        </p>
+        <div class="prophecy-input">
+          <input class="field" id="prophecyInput" inputmode="numeric" placeholder="1~100">
+          <button class="btn gold" id="btnSubmit">예언</button>
+        </div>
+      </div>
+      <div id="submittedArea" class="hidden">
+        <div class="submitted-note">✦ 예언 완료: <span id="myValue" class="tech"></span> ✦</div>
+        <p class="muted" style="text-align:center; font-size:.8rem; margin-top:6px;">결과 공개를 기다리세요. 시간 내 다시 제출하면 수정됩니다.</p>
+        <button class="btn ghost block" id="btnEdit" style="margin-top:10px;">예언 수정</button>
+      </div>
+    </div>
+
+    <!-- 능력 카드 -->
+    <div class="panel" id="abilityPanel" style="margin-top:14px;">
+      <div class="spread" style="margin-bottom:8px;">
+        <h3 style="font-size:1.05rem;">능력 카드</h3>
+        <span class="chip gold" id="abilityState">제3계층부터 해금</span>
+      </div>
+      <div class="cards" id="cards"></div>
+    </div>
+
+    <!-- 나의 기록 -->
+    <div class="panel" style="margin-top:14px;">
+      <h3 style="font-size:1.05rem; margin-bottom:8px;">나의 예언 기록</h3>
+      <div class="records" id="records"><p class="muted" style="font-size:.85rem;">아직 기록이 없습니다.</p></div>
+    </div>
+  </section>
+
+  <!-- 엔딩 -->
+  <section id="view-end" class="center-screen hidden" style="min-height:90vh;">
+    <div class="panel corner-frame fade-in" style="width:100%; text-align:center;">
+      <div style="font-size:2.6rem;" id="endIcon">👁️‍🗨️</div>
+      <p class="tracked" id="endTitle">탑이 닫혔습니다</p>
+      <div class="tech gold" style="font-size:2.4rem; margin:10px 0;" id="endName">—</div>
+      <p class="muted">최종 통찰력 <span id="endScore" class="cyan tech"></span> · <span id="endRank"></span></p>
+      <p class="muted" style="font-size:.8rem; margin-top:16px;">모든 기록이 곧 소멸됩니다.</p>
+    </div>
+  </section>
+</div>
+
+<!-- 결과/대기 오버레이 -->
+<div id="swait">
+  <div style="text-align:center;">
+    <div class="orb-wrap">
+      <div class="orb" style="width:160px;height:160px;">
+        <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+        <div class="core" style="width:64px;height:64px;"><span class="pulse gold" style="font-size:1.3rem;">∴</span></div>
+      </div>
+    </div>
+    <div class="swait-msg" id="swaitMsg">집단의식 분석 중...</div>
+    <div id="myResult" class="hidden" style="margin-top:18px;">
+      <div class="reveal-truth" id="myTruth" style="font-size:3rem;">0</div>
+      <div class="reveal-truth-label">진실의 좌표</div>
+      <div class="panel" style="margin-top:16px; width:min(420px,90vw); text-align:left;">
+        <div class="result-row"><span class="muted">나의 예언</span><span class="tech" id="resVal"></span><span></span></div>
+        <div class="result-row"><span class="muted">나의 순위</span><span class="tech" id="resRank"></span><span></span></div>
+        <div class="result-row" style="border:none;"><span class="muted">획득 통찰력</span><span class="tech cyan" id="resGain"></span><span></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 모달 (능력 대상 선택 / 정보 표시) -->
+<div id="modal">
+  <div class="panel corner-frame modal-card fade-in">
+    <div class="spread"><h3 id="modalTitle" style="font-size:1.2rem;">능력</h3><button class="btn ghost" id="modalClose" style="padding:6px 14px;">닫기</button></div>
+    <div id="modalBody" style="margin-top:6px;"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/game-logic.js"></script>
+<script src="js/db.js"></script>
+<script src="js/student.js"></script>
+</body>
+</html>

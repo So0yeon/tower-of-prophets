@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>예언자들의 탑 — 관측소 (교사)</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .tboard { max-width: 1280px; margin: 0 auto; padding: 22px; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:18px; flex-wrap:wrap; }
+  .codebox { display:flex; align-items:center; gap:18px; }
+  .codebox .code { font-family:var(--tech); font-weight:900; font-size:2.6rem; color:var(--gold-bright);
+                   letter-spacing:.25em; text-shadow:0 0 26px rgba(232,200,125,.5); }
+  .layer-tag { font-family:var(--display); font-size:1.6rem; }
+  .conn { font-size:.78rem; }
+  .conn .dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--cyan); margin-right:6px; box-shadow:0 0 8px var(--cyan); }
+
+  .main-grid { display:grid; grid-template-columns: 1.4fr 1fr; gap:22px; align-items:start; }
+  @media (max-width: 920px){ .main-grid{ grid-template-columns:1fr; } }
+
+  .orb-stage { min-height: 460px; display:grid; place-items:center; }
+  .orb-big { width: 380px; height: 380px; }
+  .orb-big .ticks i { transform-origin: 50% 186px; }
+  .orb-label { text-align:center; }
+  .orb-label .timer { font-family:var(--tech); font-size:3.2rem; font-weight:900; color:var(--cyan); text-shadow:0 0 24px rgba(47,230,214,.5); }
+  .orb-label .sub { color:var(--ink-dim); margin-top:6px; letter-spacing:.1em; }
+
+  .rank-list { display:flex; flex-direction:column; gap:8px; max-height: 460px; overflow:auto; }
+  .rank-row { display:grid; grid-template-columns: 40px 1fr auto; align-items:center; gap:10px;
+              padding:10px 14px; border-radius:12px; background:rgba(5,8,24,.4); border:1px solid var(--glass-line); }
+  .rank-row .pos { font-family:var(--tech); font-weight:700; color:var(--ink-dim); }
+  .rank-row.top1 { border-color: rgba(232,200,125,.5); background:rgba(232,200,125,.08); }
+  .rank-row.top1 .pos { color: var(--gold-bright); }
+  .rank-row .name { font-weight:700; }
+  .rank-row .score { font-family:var(--tech); font-weight:700; color:var(--cyan); }
+
+  .controls { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:22px; }
+
+  .players-grid { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:10px; }
+  .pnode { width:54px; height:54px; border-radius:14px; display:grid; place-items:center;
+           font-family:var(--tech); font-weight:700; background:rgba(47,230,214,.1);
+           border:1px solid rgba(47,230,214,.3); color:var(--cyan); }
+
+  /* 결과 공개 오버레이 */
+  /* assets/bg-reveal.webp 를 넣으면 결과 공개 화면 배경으로 합성됩니다(없으면 어두운 단색). */
+  #reveal { position:fixed; inset:0; z-index:50;
+            background-color:#02040c;
+            background-image:
+              linear-gradient(rgba(2,4,12,.90), rgba(2,4,12,.94)),
+              url('assets/bg-reveal.webp');
+            background-size:cover; background-position:center;
+            display:none; place-items:center; backdrop-filter:blur(4px); }
+  #reveal.show { display:grid; }
+  .reveal-inner { text-align:center; width:min(760px,92vw); }
+  .reveal-msg { font-family:var(--display); font-size:1.6rem; color:var(--cyan); letter-spacing:.1em; min-height:2rem; }
+  .reveal-truth { font-family:var(--tech); font-weight:900; font-size:6rem; color:var(--gold-bright);
+                  text-shadow:0 0 50px rgba(232,200,125,.6); margin:10px 0; }
+  .reveal-truth-label { letter-spacing:.4em; color:var(--ink-dim); text-transform:uppercase; font-size:.9rem; }
+  .podium { display:flex; flex-direction:column; gap:10px; margin-top:26px; }
+  .podium .prow { display:grid; grid-template-columns:48px 1fr auto auto; gap:14px; align-items:center;
+                  padding:14px 18px; border-radius:12px; background:var(--glass); border:1px solid var(--glass-line); opacity:0; }
+  .podium .prow.in { animation: fadeIn .5s ease both; }
+  .podium .medal { font-family:var(--tech); font-weight:900; font-size:1.4rem; }
+  .podium .pval { font-family:var(--tech); color:var(--ink-dim); }
+  .podium .pgain { font-family:var(--tech); font-weight:700; color:var(--cyan); }
+
+  .ending { text-align:center; }
+  .ending .crown { font-size:4rem; }
+  .ending .winner-name { font-family:var(--display); font-size:3.4rem; color:var(--gold-bright); text-shadow:0 0 40px rgba(232,200,125,.5); }
+</style>
+</head>
+<body>
+<div class="stage tboard">
+
+  <!-- 상단바 -->
+  <div class="topbar">
+    <div class="codebox">
+      <div>
+        <p class="tracked">입장 코드</p>
+        <div class="code" id="roomCode">----</div>
+      </div>
+      <div id="layerTag" class="layer-tag muted">대기실</div>
+    </div>
+    <div class="conn"><span class="dot"></span><span id="connText">관측소 연결됨</span></div>
+  </div>
+
+  <!-- 대기실 -->
+  <section id="view-lobby" class="panel corner-frame fade-in">
+    <div style="text-align:center;">
+      <h2 style="font-size:1.6rem;">예언자들이 탑에 오르는 중...</h2>
+      <p class="muted" style="margin-top:6px;">학생들에게 위 코드를 알려주세요. (<a href="student.html" target="_blank" class="cyan">학생 입장 링크</a>)</p>
+      <div class="players-grid" id="lobbyPlayers"></div>
+      <p class="muted" style="margin-top:14px;"><span id="lobbyCount" class="cyan tech">0</span> 명 입장</p>
+      <div class="controls">
+        <button class="btn gold lg" id="btnStartGame" disabled>제1계층 개방</button>
+        <button class="btn ghost" id="btnAbort">탑 무너뜨리기</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 진행 화면 -->
+  <section id="view-play" class="hidden">
+    <div class="main-grid">
+      <div class="panel corner-frame orb-stage">
+        <div class="orb-wrap">
+          <div class="orb orb-big">
+            <div class="ring"></div>
+            <div class="ring r2"></div>
+            <div class="ring r3"></div>
+            <div class="ring r4"></div>
+            <div class="ticks" id="ticks"></div>
+            <div class="core" style="width:180px;height:180px;">
+              <div class="orb-label">
+                <div class="timer" id="timer">5:00</div>
+                <div class="sub"><span id="submitCount">0</span> / <span id="totalCount">0</span> 예언 완료</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel corner-frame">
+        <div class="spread" style="margin-bottom:12px;">
+          <h3 style="font-size:1.2rem;">통찰력 순위</h3>
+          <span class="chip" id="abilityChip" style="display:none;">⚡ 능력 해금됨</span>
+        </div>
+        <div class="rank-list" id="rankList"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn gold lg" id="btnReveal">집단의식 분석 (결과 공개)</button>
+      <button class="btn ghost" id="btnAbort2">게임 종료</button>
+    </div>
+  </section>
+
+  <!-- 엔딩 -->
+  <section id="view-end" class="panel corner-frame hidden fade-in">
+    <div class="ending">
+      <div class="crown">👁️‍🗨️</div>
+      <p class="tracked">THE TRANSCENDENT</p>
+      <p class="muted">진실에 가장 가까이 닿은 예언자</p>
+      <div class="winner-name" id="winnerName">—</div>
+      <p class="muted" style="margin-top:8px;">최종 통찰력 <span id="winnerScore" class="gold tech"></span></p>
+      <div class="rank-list" id="finalRank" style="max-width:480px; margin:24px auto 0;"></div>
+      <div class="controls">
+        <button class="btn danger lg" id="btnFinish">기록 소멸 · 탑 닫기</button>
+      </div>
+      <p class="muted" style="font-size:.78rem; margin-top:10px;">탑을 닫으면 모든 예언·통찰력·능력 기록이 영구 삭제됩니다.</p>
+    </div>
+  </section>
+</div>
+
+<!-- 결과 공개 연출 오버레이 -->
+<div id="reveal">
+  <div class="reveal-inner">
+    <div class="orb-wrap" style="margin-bottom:18px;">
+      <div class="orb" style="width:240px;height:240px;">
+        <div class="ring"></div>
+        <div class="ring r2"></div>
+        <div class="ring r3"></div>
+        <div class="core" style="width:110px;height:110px;">
+          <span class="big-number pulse" id="revealCore">∴</span>
+        </div>
+      </div>
+    </div>
+    <div class="reveal-msg" id="revealMsg"></div>
+    <div id="revealTruthBox" class="hidden">
+      <div class="reveal-truth" id="revealTruth">0</div>
+      <div class="reveal-truth-label">진실의 좌표</div>
+    </div>
+    <div class="podium" id="podium"></div>
+    <div style="margin-top:24px;">
+      <button class="btn gold lg hidden" id="btnNext">다음 계층으로</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/game-logic.js"></script>
+<script src="js/db.js"></script>
+<script src="js/teacher.js"></script>
+</body>
+</html>

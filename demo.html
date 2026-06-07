@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>예언자들의 탑 · 미리보기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Song+Myung&family=Orbitron:wght@500;700;900&family=Gothic+A1:wght@300;400;500;700;800&display=swap');
+  :root{
+    --navy-900:#050818; --navy-700:#111842; --navy-600:#1a234f;
+    --cyan:#2fe6d6; --cyan-dim:#1aa89c; --gold:#e8c87d; --gold-bright:#ffd86b;
+    --ink:#e8ecff; --ink-dim:#8a93c9;
+    --display:'Song Myung',serif; --tech:'Orbitron',sans-serif; --body:'Gothic A1',sans-serif;
+  }
+  *{box-sizing:border-box;} html,body{margin:0;min-height:100%;}
+  body{
+    font-family:var(--body); color:var(--ink); background-color:#04060f;
+    background-image:
+      radial-gradient(ellipse 80% 60% at 50% -10%, rgba(47,230,214,.10), transparent 60%),
+      radial-gradient(ellipse 70% 50% at 85% 110%, rgba(232,200,125,.08), transparent 60%),
+      radial-gradient(circle at 50% 40%, #0c1234 0%, #070a1f 55%, #04060f 100%);
+    overflow-x:hidden;
+  }
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,.8), transparent),
+      radial-gradient(1px 1px at 70% 20%, rgba(255,255,255,.6), transparent),
+      radial-gradient(1.5px 1.5px at 40% 70%, rgba(180,230,255,.7), transparent),
+      radial-gradient(1px 1px at 85% 60%, rgba(255,255,255,.5), transparent),
+      radial-gradient(1px 1px at 55% 45%, rgba(255,255,255,.5), transparent);
+    animation:twinkle 6s ease-in-out infinite alternate;}
+  @keyframes twinkle{from{opacity:.5;}to{opacity:1;}}
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:22px 16px 60px;}
+  header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+  .brand{font-family:var(--display);font-size:1.5rem;letter-spacing:.04em;}
+  .brand small{display:block;font-family:var(--tech);font-size:.62rem;letter-spacing:.4em;color:var(--cyan-dim);}
+  .demo-tag{font-family:var(--tech);font-size:.62rem;letter-spacing:.3em;color:var(--gold);
+    border:1px solid rgba(232,200,125,.3);background:rgba(232,200,125,.1);padding:6px 10px;border-radius:999px;}
+  .panel{background:linear-gradient(180deg, rgba(26,35,79,.55), rgba(10,14,39,.55));
+    border:1px solid rgba(120,150,255,.16);border-radius:18px;padding:22px;backdrop-filter:blur(8px);
+    box-shadow:0 10px 40px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.05);}
+  .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;}
+  @media(max-width:780px){.grid{grid-template-columns:1fr;}}
+  .layer-chip{font-family:var(--tech);letter-spacing:.2em;color:var(--cyan);font-size:.8rem;}
+  h3{margin:0 0 12px;font-size:1.15rem;}
+  .muted{color:var(--ink-dim);} .gold{color:var(--gold);} .cyan{color:var(--cyan);}
+  .tech{font-family:var(--tech);}
+  /* orb */
+  .orb-stage{display:grid;place-items:center;min-height:340px;}
+  .orb-wrap{position:relative;display:grid;place-items:center;}
+  .orb{position:relative;width:300px;height:300px;border-radius:50%;display:grid;place-items:center;
+    background:radial-gradient(circle at 50% 45%, rgba(47,230,214,.10), transparent 60%);}
+  .orb .ring{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(47,230,214,.35);}
+  .orb .ring.r2{inset:26px;border-color:rgba(232,200,125,.3);border-style:dashed;animation:spin 26s linear infinite;}
+  .orb .ring.r3{inset:54px;border-color:rgba(47,230,214,.25);animation:spin 18s linear infinite reverse;}
+  .orb .ring.r4{inset:84px;border-color:rgba(255,255,255,.12);}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .orb .core{width:180px;height:180px;border-radius:50%;display:grid;place-items:center;text-align:center;
+    background:radial-gradient(circle at 50% 40%, rgba(17,24,66,.9), rgba(5,8,24,.95));
+    border:1px solid rgba(120,150,255,.2);box-shadow:inset 0 0 40px rgba(47,230,214,.15);}
+  .timer{font-family:var(--tech);font-weight:900;font-size:2.4rem;color:var(--cyan);}
+  .sub{font-size:.78rem;color:var(--ink-dim);margin-top:4px;}
+  .big-number{font-family:var(--tech);font-weight:900;font-size:2.6rem;color:var(--gold-bright);}
+  .pulse{animation:pulse 1.6s ease-in-out infinite;} @keyframes pulse{0%,100%{opacity:.6;}50%{opacity:1;}}
+  /* rank list */
+  .rank-list{display:flex;flex-direction:column;gap:8px;}
+  .rank-row{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:12px;
+    background:rgba(10,14,39,.5);border:1px solid rgba(120,150,255,.12);}
+  .rank-row .pos{font-family:var(--tech);width:30px;color:var(--ink-dim);}
+  .rank-row.me{border-color:rgba(47,230,214,.5);box-shadow:0 0 0 1px rgba(47,230,214,.25);}
+  .rank-row .nm{flex:1;} .rank-row .pt{font-family:var(--tech);color:var(--gold);}
+  .top1 .pos{color:var(--gold-bright);} 
+  /* buttons */
+  .btn{font-family:var(--body);font-weight:800;font-size:1rem;padding:14px 22px;border-radius:14px;
+    color:var(--navy-900);cursor:pointer;border:none;letter-spacing:.02em;
+    background:linear-gradient(135deg,var(--cyan),var(--cyan-dim));box-shadow:0 6px 22px rgba(47,230,214,.3);}
+  .btn.gold{background:linear-gradient(135deg,var(--gold-bright),var(--gold));box-shadow:0 6px 22px rgba(232,200,125,.35);}
+  .btn.ghost{background:transparent;color:var(--cyan);border:1px solid rgba(47,230,214,.4);box-shadow:none;}
+  .btn:disabled{opacity:.45;cursor:default;}
+  .controls{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap;}
+  /* reveal overlay */
+  #reveal{position:fixed;inset:0;z-index:50;background-color:#02040c;
+    background-image:linear-gradient(rgba(2,4,12,.9),rgba(2,4,12,.94));
+    display:none;place-items:center;backdrop-filter:blur(4px);}
+  #reveal.show{display:grid;}
+  .reveal-inner{text-align:center;width:min(760px,92vw);}
+  .reveal-msg{font-family:var(--display);font-size:1.5rem;color:var(--cyan);letter-spacing:.08em;min-height:2rem;}
+  .reveal-truth{font-family:var(--tech);font-weight:900;font-size:5.5rem;color:var(--gold-bright);
+    text-shadow:0 0 40px rgba(255,216,107,.5);}
+  .reveal-truth-label{letter-spacing:.4em;color:var(--ink-dim);text-transform:uppercase;font-size:.85rem;}
+  .hidden{display:none!important;}
+  .podium{display:flex;flex-direction:column;gap:8px;max-width:460px;margin:22px auto 0;}
+  .pod-row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;
+    background:rgba(17,24,66,.6);border:1px solid rgba(120,150,255,.16);opacity:0;transform:translateY(8px);
+    animation:fadeIn .5s ease forwards;}
+  @keyframes fadeIn{to{opacity:1;transform:none;}}
+  .pod-row .medal{font-size:1.3rem;width:34px;text-align:center;}
+  .pod-row .nm{flex:1;text-align:left;}
+  .pod-row .val{font-family:var(--tech);color:var(--cyan);}
+  .pod-row .gain{font-family:var(--tech);color:var(--gold);font-weight:700;}
+  .ending{text-align:center;padding:20px;}
+  .crown{font-size:3.4rem;} .winner-name{font-family:var(--display);font-size:2.4rem;color:var(--gold-bright);margin-top:6px;}
+  .note{font-size:.78rem;color:var(--ink-dim);text-align:center;margin-top:14px;}
+  .badge{display:inline-block;font-family:var(--tech);font-size:.6rem;letter-spacing:.2em;color:var(--cyan);
+    border:1px solid rgba(47,230,214,.3);border-radius:999px;padding:4px 9px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">예언자들의 탑<small>TOWER OF PROPHETS</small></div>
+    <div class="demo-tag">미리보기 · 서버 없이 봇이 자동 진행</div>
+  </header>
+
+  <div class="grid">
+    <div class="panel orb-stage">
+      <div class="orb-wrap">
+        <div class="orb">
+          <div class="ring"></div><div class="ring r2"></div>
+          <div class="ring r3"></div><div class="ring r4"></div>
+          <div class="core">
+            <div>
+              <div class="timer" id="timer">5:00</div>
+              <div class="sub"><span id="submitCount">0</span> / <span id="totalCount">12</span> 예언 완료</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <h3 style="margin:0;">통찰력 순위</h3>
+        <span class="layer-chip" id="layerChip">제 1 계층</span>
+      </div>
+      <div class="rank-list" id="rankList"></div>
+      <p class="note" id="abilityNote">능력 카드는 제3계층부터 해금됩니다.</p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn gold" id="btnGo">계층 시작 ▶</button>
+    <button class="btn ghost" id="btnReset">처음부터</button>
+  </div>
+  <p class="note">이 화면은 분위기·흐름 미리보기입니다. 실제 수업은 README의 설정(Supabase)을 따릅니다.<br>
+  나(<span class="cyan">예언자-당신</span>)는 봇처럼 자동으로 예언합니다.</p>
+</div>
+
+<!-- 결과 공개 연출 -->
+<div id="reveal">
+  <div class="reveal-inner">
+    <div class="orb-wrap" style="margin-bottom:16px;">
+      <div class="orb" style="width:240px;height:240px;">
+        <div class="ring"></div><div class="ring r2"></div><div class="ring r3"></div>
+        <div class="core" style="width:120px;height:120px;">
+          <span class="big-number pulse" id="revealCore">∴</span>
+        </div>
+      </div>
+    </div>
+    <div class="reveal-msg" id="revealMsg"></div>
+    <div id="revealTruthBox" class="hidden">
+      <div class="reveal-truth" id="revealTruth">0</div>
+      <div class="reveal-truth-label">진실의 좌표</div>
+    </div>
+    <div class="podium" id="podium"></div>
+    <div class="controls">
+      <button class="btn gold hidden" id="btnNext">다음 계층으로</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- 게임 계산 로직 (game-logic.js와 동일) ----
+const EPS=1e-9;
+const SCORE={1:8,2:5,3:3,4:2,5:1};
+const TRUTH_FACTOR=0.5, TOTAL_LAYERS=5;
+function computeLayer(props){
+  const n=props.length; if(!n) return {average:0,truth:0,results:[]};
+  const avg=props.reduce((s,p)=>s+p.value,0)/n;
+  const truth=avg*TRUTH_FACTOR;
+  const rows=props.map(p=>({id:p.id,name:p.name,value:p.value,me:p.me,distance:Math.abs(p.value-truth)}));
+  rows.sort((a,b)=>a.distance-b.distance);
+  let rank=0,prev=null;
+  rows.forEach((r,i)=>{ if(prev===null||Math.abs(r.distance-prev)>EPS){rank=i+1;prev=r.distance;}
+    r.rank=rank; r.gained=SCORE[r.rank]||0; });
+  return {average:avg,truth,results:rows};
+}
+
+// ---- 가짜 예언자들 ----
+const NAMES=["당신","별을읽는자","검은사제","공허","제7의눈","메아리","잿빛","서리","나선","태초","무명","마지막불꽃"];
+let prophets, layer, started;
+function init(){
+  prophets=NAMES.map((nm,i)=>({id:i,name:nm,me:i===0,insight:0}));
+  layer=1; started=false;
+  document.getElementById('totalCount').textContent=prophets.length;
+  document.getElementById('btnGo').disabled=false;
+  document.getElementById('btnGo').textContent='계층 시작 ▶';
+  document.getElementById('reveal').classList.remove('show');
+  setLayerChip(); renderRank(); resetTimerDisplay();
+}
+function setLayerChip(){
+  const k=['','1','2','3','4','5'][layer]||layer;
+  document.getElementById('layerChip').textContent='제 '+k+' 계층';
+  document.getElementById('abilityNote').innerHTML = layer>=3
+    ? '<span class="badge">⚡ 능력 해금</span> 운명의 장막 · 정신 감응 · 아카식 열람 · 공명'
+    : '능력 카드는 제3계층부터 해금됩니다.';
+}
+function resetTimerDisplay(){ document.getElementById('timer').textContent='5:00';
+  document.getElementById('submitCount').textContent='0'; }
+function renderRank(){
+  const sorted=[...prophets].sort((a,b)=>b.insight-a.insight);
+  let rank=0,prev=null;
+  document.getElementById('rankList').innerHTML=sorted.map((p,i)=>{
+    if(prev===null||p.insight!==prev){rank=i+1;prev=p.insight;}
+    return `<div class="rank-row ${p.me?'me':''} ${rank===1?'top1':''}">
+      <span class="pos">${rank}위</span><span class="nm">${p.name}${p.me?' (나)':''}</span>
+      <span class="pt">${p.insight}</span></div>`;
+  }).join('');
+}
+
+// 봇 전략: 계층이 오를수록 더 낮은 수(평균의 절반을 노림). 약간의 무작위.
+function botValue(){
+  const base = Math.max(8, 50 - layer*7);
+  const v = Math.round(base + (Math.random()*2-1)*base*0.6);
+  return Math.min(100, Math.max(1, v));
+}
+
+// ---- 계층 진행 ----
+function runLayer(){
+  if(started) return; started=true;
+  document.getElementById('btnGo').disabled=true;
+  const props=prophets.map(p=>({id:p.id,name:p.name,me:p.me,value:botValue()}));
+  // 압축된 카운트다운(미리보기): 6초 동안 제출이 차오름
+  let t=300, shown=0; const total=prophets.length;
+  const order=[...props].sort(()=>Math.random()-0.5);
+  const timerEl=document.getElementById('timer'), subEl=document.getElementById('submitCount');
+  const iv=setInterval(()=>{
+    t-=50; if(t<0)t=0;
+    timerEl.textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');
+    if(shown<total && Math.random()<0.7){ shown++; subEl.textContent=shown; }
+    if(t<=0 || shown>=total){ clearInterval(iv); subEl.textContent=total; timerEl.textContent='0:00';
+      setTimeout(()=>reveal(props),500); }
+  },500);
+}
+
+function reveal(props){
+  const {truth,results}=computeLayer(props);
+  results.forEach(r=>{ const p=prophets.find(x=>x.id===r.id); p.insight+=r.gained; });
+  const ov=document.getElementById('reveal'); ov.classList.add('show');
+  const msg=document.getElementById('revealMsg'), core=document.getElementById('revealCore');
+  const truthBox=document.getElementById('revealTruthBox'), truthEl=document.getElementById('revealTruth');
+  const podium=document.getElementById('podium'), btnNext=document.getElementById('btnNext');
+  msg.textContent=''; core.textContent='∴'; truthBox.classList.add('hidden');
+  podium.innerHTML=''; btnNext.classList.add('hidden');
+  const steps=[
+    ()=>{ msg.textContent='집단의식 분석 중...'; },
+    ()=>{ msg.textContent='진실의 좌표 계산 중...'; core.textContent='?'; },
+    ()=>{ // 큰 숫자 등장
+      msg.textContent='';
+      truthEl.textContent=truth.toFixed(1); truthBox.classList.remove('hidden');
+      core.classList.remove('pulse'); core.textContent='◉';
+    },
+    ()=>{ // 상위 5명 + 획득 통찰력
+      const medals=['🥇','🥈','🥉','✦','✦'];
+      podium.innerHTML=results.slice(0,5).map((r,i)=>
+        `<div class="pod-row" style="animation-delay:${i*0.12}s">
+           <span class="medal">${medals[i]||'✦'}</span>
+           <span class="nm">${r.name}${r.me?' (나)':''}</span>
+           <span class="val">예언 ${r.value}</span>
+           <span class="gain">+${r.gained}</span>
+         </div>`).join('');
+      btnNext.classList.remove('hidden');
+      btnNext.textContent = layer>=TOTAL_LAYERS ? '초월자 선정 ✦' : '다음 계층으로';
+    },
+  ];
+  let s=0; const tick=()=>{ if(s<steps.length){ steps[s](); s++; setTimeout(tick,1400); } };
+  tick();
+}
+
+function next(){
+  document.getElementById('reveal').classList.remove('show');
+  renderRank();
+  if(layer>=TOTAL_LAYERS){ ending(); return; }
+  layer++; started=false; setLayerChip(); resetTimerDisplay();
+  document.getElementById('btnGo').disabled=false;
+}
+
+function ending(){
+  const sorted=[...prophets].sort((a,b)=>b.insight-a.insight);
+  const w=sorted[0];
+  const ov=document.getElementById('reveal'); ov.classList.add('show');
+  document.getElementById('revealMsg').textContent='';
+  document.getElementById('revealTruthBox').classList.add('hidden');
+  document.querySelector('#reveal .orb-wrap').style.display='none';
+  document.getElementById('podium').innerHTML=`
+    <div class="ending">
+      <div class="crown">👁️‍🗨️</div>
+      <p class="reveal-truth-label">THE TRANSCENDENT</p>
+      <div class="winner-name">${w.name}</div>
+      <p class="muted" style="margin-top:6px;">최종 통찰력 <span class="gold tech">${w.insight}</span></p>
+    </div>
+    ${sorted.slice(0,5).map((p,i)=>`<div class="pod-row">
+       <span class="medal">${['🥇','🥈','🥉','4','5'][i]}</span>
+       <span class="nm">${p.name}${p.me?' (나)':''}</span>
+       <span class="gain">${p.insight}</span></div>`).join('')}`;
+  const btn=document.getElementById('btnNext'); btn.classList.remove('hidden');
+  btn.textContent='처음부터'; btn.onclick=()=>{ document.querySelector('#reveal .orb-wrap').style.display='';
+    btnNext.onclick=next; init(); };
+}
+
+const btnNext=document.getElementById('btnNext');
+document.getElementById('btnGo').onclick=runLayer;
+document.getElementById('btnReset').onclick=()=>{ document.querySelector('#reveal .orb-wrap').style.display=''; btnNext.onclick=next; init(); };
+btnNext.onclick=next;
+init();
+</script>
+</body>
+</html>
