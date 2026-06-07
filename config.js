@@ -5,10 +5,10 @@
 
 window.CONFIG = {
   // 프로젝트 URL (예: https://abcdwxyz.supabase.co)
-  SUPABASE_URL: "여기에_SUPABASE_URL_붙여넣기",
+  SUPABASE_URL: "https://evkyiemqdeoaaorynozy.supabase.co",
 
   // anon public 키 (긴 문자열). service_role 키는 절대 넣지 마세요!
-  SUPABASE_ANON_KEY: "여기에_ANON_PUBLIC_키_붙여넣기",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2a3lpZW1xZGVvYWFvcnlub3p5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3OTI5NTYsImV4cCI6MjA5NjM2ODk1Nn0.VRURNH8nXpK8wpAaDG3YlV7NwqaBDr7CNj9WTbQTdTY",
 
   // ---- 게임 규칙(원하면 조정 가능) ----
   TOTAL_LAYERS: 5,            // 총 계층 수
